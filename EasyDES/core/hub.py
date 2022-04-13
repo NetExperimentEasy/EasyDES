@@ -58,7 +58,8 @@ class CommunicationHub(HubBase, Communication):
             self.ip=get_ip_address(eth)
             assert self.ip , "interface has no ip"
         self.port = port
-        self.flag = True    # flag: control if udp server/client run
+        self.flag = True    # flag: control if udp lient run
+        self.experiment = False     # Mission系统靠这个关键字开启试验
         if self.type == "worker":
             self.node_pool = None
         elif self.type == "controller":
@@ -110,7 +111,7 @@ class CommunicationHub(HubBase, Communication):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         logging.info("worker udp server started")
         sock.bind((self.ip, self.port))
-        while self.flag:
+        while True:
             data, addr = sock.recvfrom(1024)
             logging.info(f"worker udp server rev {data.decode()} from {addr}")
             if addr != self.ip and data.decode() == addr: 
@@ -121,11 +122,12 @@ class CommunicationHub(HubBase, Communication):
                 data.decode(),服务端返回的数据包内的信息， if data.decode() == self.ip -> 服务端的包 :  注册成功
                 """
                 logging.info(f"worker udp server data.decode() == addr ? {data.decode() == addr} ")
-                self.flag = False   # 结束worker的client和server
-                sock.close()
-                return True
-        sock.close()
-        return False
+                self.flag = False   # 结束worker的client
+                # sock.close()
+                # return True
+            if data.decode() == "start":
+                # start,开始任务运行
+                self.experiment = True
     
     def controller_udp_server(self):
         """
