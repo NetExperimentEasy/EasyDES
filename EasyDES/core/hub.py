@@ -8,24 +8,31 @@ from .communication import Communication
 from .utils import get_ip_address
 import time
 from threading import Thread
+import msgpack
+from .utils import touch_file
 
 logging.basicConfig(level=logging.INFO,
                       format='[%(levelname)s] (%(threadName)-9s) %(message)s',)
 
 class HubBase(ABC):
     """
-    Hub:注册中心
+    Hub:注册中心 :单例  :Singleton
     MissionsHub
     CommunicationHub
     """
-    pass
+    def __new__(cls, type):
+        """ creates a singleton object, if it is not created,
+        or else returns the previous singleton object"""
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(CommunicationHub, cls).__new__(cls)
+        return cls.instance
 
 @dataclass
 class CommunicationHubItem:
     ip:str
     introduction:str=None
 
-class CommunicationHub(Communication):
+class CommunicationHub(HubBase, Communication):
     """
     网络控制中心,每个Node上跑一个单例，负责维护和其他节点的通信
     发现节点\   udp广播发现，worker端进行udp广播，Controller端进行udp发现
@@ -38,7 +45,7 @@ class CommunicationHub(Communication):
     失效节点清除\暂时不要
     具体的传输功能，序列化，反序列化
     """
-    def __init__(self, type, eth) -> None:
+    def __init__(self, type, eth, port=5254) -> None:
         """
         type : [worker]/[controller]
         eth : interface name
@@ -50,17 +57,15 @@ class CommunicationHub(Communication):
         if eth:
             self.ip=get_ip_address(eth)
             assert self.ip , "interface has no ip"
-        self.port = 5254
-        self.flag = True    # if send udp
-        self.node_pool = [] # ip list
-        self.communication = Communication()
-
-    def __new__(cls, type):
-        """ creates a singleton object, if it is not created,
-        or else returns the previous singleton object"""
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(CommunicationHub, cls).__new__(cls)
-        return cls.instance
+        self.port = port
+        self.flag = True    # flag: control if udp server/client run
+        if self.type == "worker":
+            self.node_pool = None
+        elif self.type == "controller":
+            self.node_pool = [] # ip list
+        else:
+            raise ValueError("CommunicationHub.type error")    
+        # self.communication = Communication()
     
     def run_udp(self):
         if self.type == "worker":
@@ -107,7 +112,7 @@ class CommunicationHub(Communication):
         sock.bind((self.ip, self.port))
         while self.flag:
             data, addr = sock.recvfrom(1024)
-            logging.info(f"worker udp client rev {data.decode()} from {addr}")
+            logging.info(f"worker udp server rev {data.decode()} from {addr}")
             if addr != self.ip and data.decode() == addr: 
                 """
                 work udp server
@@ -115,7 +120,7 @@ class CommunicationHub(Communication):
                 addr,数据包的源ip，if addr == self.ip -> 广播包 : 跳过
                 data.decode(),服务端返回的数据包内的信息， if data.decode() == self.ip -> 服务端的包 :  注册成功
                 """
-                logging.info(f"worker udp client data.decode() == addr ? {data.decode() == addr} ")
+                logging.info(f"worker udp server data.decode() == addr ? {data.decode() == addr} ")
                 self.flag = False   # 结束worker的client和server
                 sock.close()
                 return True
@@ -182,19 +187,18 @@ class MissionHub(MissionHubBase, MissionManager):
         如果目标节点的MissionHub没有该任务，则通信模块发送代码，并在目标节点注册任务。
     分发任务，Hub只负责发布(任务UUID,添加次数)，各个节点的MissionManager据此负责任务挂载
     """
-    def __init__(self) -> None:
+    def __init__(self, type, eth) -> None:
         super().__init__()
         # self.log_file = "missonHub.log"
         self.missions_pool = []
         self.uuid_list = [] # save uuid, 判断任务是否存在
         self.communication = CommunicationHub()
     
-    def __new__(cls):
-        """ creates a singleton object, if it is not created,
-        or else returns the previous singleton object"""
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(MissionHub, cls).__new__(cls)
-        return cls.instance
+    def run():
+        """
+        run MissionHub
+        """
+        pass
     
     def register(self, mission:Mission=None, mission_item:MissionHubItem=None, creator=None, introduction=None, if_new=False):
         # 注册任务, if_new : Ture, register a new mission to Hub, False, register a exist mission to Hub
@@ -209,4 +213,27 @@ class MissionHub(MissionHubBase, MissionManager):
 
     def if_mission_exist(self, uuid):
         return uuid in self.uuid_list
+
+    def send_mission(self, ip, port, missionHubItem:MissionHubItem):
+        data = msgpack.packb({"missionHubItem":missionHubItem})
+        self.communication.tcp_send(ip, port, data)
+        if missionHubItem.mission.mission_type == "file_path":
+            with open(f'./missions/{missionHubItem.mission}', "r") as f:
+                file = msgpack.packb({"file":f.read(),"filename":missionHubItem.mission.mission})
+                self.communication.tcp_send(ip, port, file)
+
+    def receive_mission(self):
+        while True:
+            data = self.communication.queue.get(True)
+            obj = msgpack.unpackb(data)
+            if 'missionHubItem' in obj:
+                missionHubItem = obj['missionHubItem']
+                self.register(if_new=False,mission_item=missionHubItem)
+            if 'file' in obj:
+                file = obj['file']
+                filename = obj['filename']
+                touch_file(filename=filename)
+                with open(filename,'w') as f:
+                    f.write(file)
+
         
