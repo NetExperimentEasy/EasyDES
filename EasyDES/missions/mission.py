@@ -4,7 +4,7 @@ import datetime
 import os
 from subprocess import Popen, PIPE
 from abc import abstractclassmethod, ABC
-from ..utils import touch_file
+from utils import touch_file
 
 class MissionBase(ABC):
     # MISSION_TYPE = [
