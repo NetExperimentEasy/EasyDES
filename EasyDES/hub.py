@@ -3,8 +3,8 @@ import uuid
 import socket
 from abc import abstractclassmethod, ABC
 from dataclasses import dataclass
-from .mission import MissionManager, Mission
-from .communication import Communication
+from .missions.mission import MissionManager, Mission
+from .communication.communication import Communication
 from .utils import get_ip_address
 import time
 from threading import Thread
