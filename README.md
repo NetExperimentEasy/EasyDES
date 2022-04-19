@@ -1,9 +1,9 @@
 # EasyDES
 ### Easy Distributed Experiment System  
-简单的分布式试验任务系统
+分布式实验系统
 
 ### 功能
-分布式分发任务，集群控制
+分布式分发任务，集群节点控制
 
 controller
 下发控制信息，任务

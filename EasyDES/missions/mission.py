@@ -4,7 +4,9 @@ import datetime
 import os
 from subprocess import Popen, PIPE
 from abc import abstractclassmethod, ABC
-from utils import touch_file
+from ..utils import touch_file
+from collections import namedtuple
+from multiprocessing import Process
 
 class MissionBase(ABC):
     # MISSION_TYPE = [
@@ -52,11 +54,13 @@ class Mission(MissionBase, BashMissionMixin, PythonMissionMixin):
         mission : reuqired : Default is None : Expected type are [string]/[file_path]
         python : optional : Default is False : If True, mission type is python script
         bash : optional : Default is False : If True, mission type is bash script
+        priority : optional : Default is 5 : 1 is the highest priority
     """
-    def __init__(self, mission_type, mission, python=False, bash=False) -> None:
+    def __init__(self, mission_type, mission, python=False, bash=False, priority=5) -> None:
         super().__init__()
         self.mission_type = mission_type
         self.mission = mission
+        self.priority = priority
         if python:
             self.python = True
         elif bash:
@@ -87,6 +91,8 @@ class Mission(MissionBase, BashMissionMixin, PythonMissionMixin):
         raise SyntaxError("mission_type Type Error")
 
 
+mission_item = namedtuple('mission_item', ['priority', 'mission'])
+
 class MissionManager(MissionManagerBase):
     """
     MissionManager: 任务管理器，混入Hub中使用
@@ -96,20 +102,25 @@ class MissionManager(MissionManagerBase):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.missions_queue = queue.Queue()
+        self.missions_queue = queue.PriorityQueue()
         
     def put_mission(self, mission:Mission):
-        self.missions_queue.put(mission)
-    
-    def put_mission(self, mission:Mission):
-        self.missions_queue.put(mission)
+        self.missions_queue.put(mission_item(mission.priority, mission))
 
     def get_mission(self) -> Mission:
         return self.missions_queue.get()
 
-    def run_mission(self, log_file=None):
-        mission_item = self.get_mission()
-        return self.run(mission_item.get_command(), log_file)
+    def run_all_missions(self, log_file=None):
+        result = []
+        while not self.missions_queue.empty():
+            priority, mission = self.get_mission()
+            p = Process(target=self.run, args=(mission.get_command(), log_file))
+            p.start()
+            result.append(p)
+        for i in result:
+            i.join()
+        return True
+        # TODO: window下报错，linux下尝试
 
     def run(self, cmd, log_file=None):
         """
