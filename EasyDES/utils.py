@@ -2,6 +2,7 @@ import pathlib
 import socket
 import fcntl # windows没有
 import struct
+import msgpack
 
 def touch_file(filename):
     """
@@ -20,3 +21,10 @@ def get_ip_address(ifname):
         0x8915,
         struct.pack('256s', ifname[:15])
     )[20:24])
+
+
+def encode(data):
+    return msgpack.packb(data)
+
+def decode(data):
+    return msgpack.unpackb(data)
