@@ -1,0 +1,1 @@
+ping www.baidu.com -c 20 > "logs/ping2.log"

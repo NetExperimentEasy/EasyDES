@@ -1,0 +1,1 @@
+ping www.seclee.com -c 5 > "logs/ping1.log"

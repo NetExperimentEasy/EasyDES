@@ -1,2 +1,18 @@
-2022-04-12 12:32:42.429239:python -m this 
-b"The Zen of Python, by Tim Peters\n\nBeautiful is better than ugly.\nExplicit is better than implicit.\nSimple is better than complex.\nComplex is better than complicated.\nFlat is better than nested.\nSparse is better than dense.\nReadability counts.\nSpecial cases aren't special enough to break the rules.\nAlthough practicality beats purity.\nErrors should never pass silently.\nUnless explicitly silenced.\nIn the face of ambiguity, refuse the temptation to guess.\nThere should be one-- and preferably only one --obvious way to do it.\nAlthough that way may not be obvious at first unless you're Dutch.\nNow is better than never.\nAlthough never is often better than *right* now.\nIf the implementation is hard to explain, it's a bad idea.\nIf the implementation is easy to explain, it may be a good idea.\nNamespaces are one honking great idea -- let's do more of those!\n":Successed
+2022-04-20 13:34:56.785042:bash ./missions/bash2.sh 
+[result]:Successed
+2022-04-20 13:34:56.785052:bash ./missions/bash1.sh 
+[result]:Successed
+2022-04-20 13:34:56.783334:bash ./missions/bash1.sh 
+[result]:Successed
+2022-04-20 13:35:30.105715:bash ./missions/bash1.sh 
+[result]:Successed
+2022-04-20 13:35:30.106859:bash ./missions/bash1.sh 
+[result]:Successed
+2022-04-20 13:35:30.107217:bash ./missions/bash2.sh 
+[result]:Successed
+2022-04-20 13:39:29.966178:ping www.seclee.com -c 5 > logs/ping1.log 
+[result]:Successed
+2022-04-20 13:39:29.965607:ping www.seclee.com -c 5 > logs/ping1.log 
+[result]:Successed
+2022-04-20 13:39:29.967772:ping www.baidu.com -c 20 > logs/ping2.log 
+[result]:Successed

@@ -1,6 +1,7 @@
 import queue
 import logging
 import datetime
+import time
 import os
 from subprocess import Popen, PIPE
 from abc import abstractclassmethod, ABC
@@ -61,12 +62,10 @@ class Mission(MissionBase, BashMissionMixin, PythonMissionMixin):
         self.mission_type = mission_type
         self.mission = mission
         self.priority = priority
-        if python:
-            self.python = True
-        elif bash:
-            self.bash = True
-        else:
-            raise SyntaxError("You can not init a mission without Type")
+        self.created_time = time.mktime(datetime.datetime.now().timetuple())
+        self.python = python
+        self.bash = bash
+        assert self.python^self.bash , SyntaxError("python and bash can not be True/False at same time")
 
     def get_command(self):
         if self.python:
@@ -78,7 +77,7 @@ class Mission(MissionBase, BashMissionMixin, PythonMissionMixin):
 
     def _get_python_cmd(self):
         if self.mission_type == "string":
-            return f"python -m {self.mission}"  # 单指 -m 后面的命令
+            return f'python -c \"{self.mission}\"'  # 单指 -c 后面的命令
         if self.mission_type == "file_path":
             return f"python ./missions/{self.mission}"  # 这块先写死了下发mission文件的目录
         raise SyntaxError("mission_type Type Error")
@@ -89,6 +88,9 @@ class Mission(MissionBase, BashMissionMixin, PythonMissionMixin):
         if self.mission_type == "file_path":
             return f"bash ./missions/{self.mission}"  # 这块先写死了下发mission文件的目录
         raise SyntaxError("mission_type Type Error")
+
+    def __lt__(self, other_mission):
+        return self.created_time > other_mission.created_time
 
 
 mission_item = namedtuple('mission_item', ['priority', 'mission'])
@@ -120,7 +122,7 @@ class MissionManager(MissionManagerBase):
         for i in result:
             i.join()
         return True
-        # TODO: window下报错，linux下尝试
+        # TODO: window下报错，linux下正常
 
     def run(self, cmd, log_file=None):
         """
@@ -129,6 +131,7 @@ class MissionManager(MissionManagerBase):
         def run_cmd(cmd):
             p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate()
+            logging.info("{}".format(stdout))
             if stderr:
                 logging.error("Got error when running cmd: {}".format(cmd))
                 return stdout, stderr
@@ -136,10 +139,11 @@ class MissionManager(MissionManagerBase):
 
         if log_file:
             touch_file(f"./logs/{log_file}")
-            with open(f"./logs/{log_file}", 'w') as f:
+            with open(f"./logs/{log_file}", 'a') as f:
                 f.write(f"{datetime.datetime.now()}:{cmd} \n")
                 stdout, stderr = run_cmd(cmd)
-                f.write(f"{stdout}:{stderr}")
+                # f.write(f"[result]:{stderr},[output]:{stdout}:\n")
+                f.write(f"[result]:{stderr}\n")
         else:
             stdout, stderr = run_cmd(cmd)
         return stdout
