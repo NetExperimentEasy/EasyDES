@@ -112,7 +112,7 @@ class UDPBase(CommunicationBase):
     send udp data  \
     init: host,port \
     output: data is in the udpqueue \
-        input and output data are all not encoded
+        input and output data are all encoded and decoded
     """
     def __init__(self, host=None, port=None) -> None:
         super().__init__()

@@ -1,5 +1,4 @@
 from .communication import TCPBase, UDPBase
-import msgpack
 from threading import Thread
 import logging
 import time
@@ -15,6 +14,8 @@ class BaseTransport(TCPBase):
     def ack(self, aim_ip, aim_port, data):
         self.send(aim_ip, aim_port, data)
 
+# TODO : change this
+
 class BaseControllerServer(UDPBase):
     """
     register Hub
@@ -25,22 +26,22 @@ class BaseControllerServer(UDPBase):
         super().__init__(host, port)
         self.node_pool = []
 
-    def run_server(self):
-        t1 = Thread(target=self.server)
-        t2 = Thread(target=self.deal_queue)
+    def run(self):
+        t1 = Thread(target=self.run_server)
+        t2 = Thread(target=self.deal_udpqueue)
         t1.start()
         t2.start()
         t1.join()
         t2.join()
 
 
-    def deal_queue(self):
+    def deal_udpqueue(self):
         """
-        deal with all data
+        deal with all udpqueue : [data had been decoded]
         """
         while True:
             data, addr = self.udpqueue.get(True)
-            logging.debug(f"deal with data: {data} from {addr}")
+            logging.info(f"deal with data: {data} from {addr}")
             if type(data) == tuple:
                 self.discover(data, addr)
 
