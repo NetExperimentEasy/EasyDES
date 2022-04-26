@@ -130,7 +130,7 @@ class BaseWorker(UDPBase):
             data, addr = self.udpqueue.get(True)
             logging.debug(f"deal with data: {data} from {addr}")
             if data["type"] == "registeredReplyInstruction":
-                self.deal_registered_reply(data)
+                self.deal_registered_reply(data, addr)
             elif data["type"] == "missionStartInstruction":
                 self.mission_start(data)
 
@@ -152,14 +152,14 @@ class BaseWorker(UDPBase):
         self.send(self.controller_ip, self.controller_port, data)
         logging.info(f"mission {uuid} started reply to {self.controller_ip} succeed")
     
-    def deal_registered_reply(self, data):
+    def deal_registered_reply(self, data, addr):
         """
         reply from controller: if data["w_ip"] is the worker's ip: [string], register succeed
+        notice: server will set its ip 0.0.0.0, but worker should use its ip from addr rather than it in data
         """
         if data["w_ip"] == self.host:
             self._IF_SEND = False
-            self.controller_ip = data["c_ip"]
-            self.controller_port = data["c_port"]
+            self.controller_ip, self.controller_port = addr             
             logging.info(f"registe succeed and stop the register sender")
 
     def mission_start(self, data):
