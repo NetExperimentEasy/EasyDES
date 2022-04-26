@@ -1,4 +1,4 @@
-from EasyDES.communication import TCPBase
+from EasyDES.communication.communication import TCPBase
 import logging
 from threading import Thread
 

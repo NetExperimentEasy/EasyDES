@@ -1,4 +1,4 @@
-from EasyDES.communication import BaseController
+from EasyDES.communication.communicationHub import BaseController
 from time import sleep
 
 a = BaseController('0.0.0.0', 5686)

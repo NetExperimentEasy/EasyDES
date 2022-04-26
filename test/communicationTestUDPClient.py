@@ -1,4 +1,4 @@
-from EasyDES.communication import UDPBase
+from EasyDES.communication.communication import UDPBase
 import logging
 from threading import Thread
 
