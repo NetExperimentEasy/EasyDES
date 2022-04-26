@@ -157,10 +157,12 @@ class BaseWorker(UDPBase):
         """
         reply from controller: if data["w_ip"] is the worker's ip: [string], register succeed
         notice: server will set its ip 0.0.0.0, but worker should use its ip from addr rather than it in data
+        notice2: server's port should use data's c_port, beacause addr port are random value
         """
         if data["w_ip"] == self.host:
             self._IF_SEND = False
-            self.controller_ip, self.controller_port = addr             
+            self.controller_ip, _  = addr
+            self.controller_port = data["c_port"]             
             logging.info(f"register succeed and stop the register sender")
 
     def mission_start(self, data):
