@@ -1,4 +1,4 @@
-from EasyDES.core import node
+from EasyDES.node import node
 
 a = node.NodeBase()
 

@@ -2,7 +2,6 @@ import queue
 import logging
 import datetime
 import time
-import os
 from subprocess import Popen, PIPE
 from abc import abstractclassmethod, ABC
 from ..utils import touch_file
