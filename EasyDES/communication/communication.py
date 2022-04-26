@@ -131,7 +131,7 @@ class UDPBase(CommunicationBase):
         logging.info("udp server started")
         while True:
             data, addr = sock.recvfrom(1024)
-            logging.debug(f"udp server rev {decode(data)} from {addr}")
+            # logging.debug(f"udp server rev {decode(data)} from {addr}")
             self.udpqueue.put((decode(data),addr))
 
     def client_send(self, aim_ip, aim_port, data):
@@ -139,7 +139,7 @@ class UDPBase(CommunicationBase):
         if aim_ip == '<broadcast>':
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  
         sock.sendto(encode(data), (aim_ip, aim_port))
-        logging.info(f"udp send to {aim_ip} succeed")
+        # logging.info(f"udp send to {aim_ip} succeed")
 
     def send(self, aim_ip, aim_port, data):
         self.client_send(aim_ip, aim_port, data)

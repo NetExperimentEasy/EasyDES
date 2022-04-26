@@ -47,6 +47,7 @@ class BaseController(UDPBase):
             if data["type"] == "registerInstruction":
                 self.discover(data, addr)
             elif data["type"] == "startedReplyInstruction":
+                logging.info(f"if")
                 self.started_reply(data, addr)
             
     def register(self, ip, port):
@@ -150,7 +151,7 @@ class BaseWorker(UDPBase):
         data = deepcopy(startedReplyInstruction)
         data["uuid"] = uuid
         self.send(self.controller_ip, self.controller_port, data)
-        logging.info(f"mission {uuid} started reply to {self.controller_ip} succeed")
+        logging.info(f"mission {uuid} started reply to {self.controller_ip}:{self.controller_port} succeed")
     
     def deal_registered_reply(self, data, addr):
         """
@@ -160,7 +161,7 @@ class BaseWorker(UDPBase):
         if data["w_ip"] == self.host:
             self._IF_SEND = False
             self.controller_ip, self.controller_port = addr             
-            logging.info(f"registe succeed and stop the register sender")
+            logging.info(f"register succeed and stop the register sender")
 
     def mission_start(self, data):
         """

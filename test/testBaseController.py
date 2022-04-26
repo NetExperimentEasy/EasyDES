@@ -6,6 +6,7 @@ a = BaseController('0.0.0.0', 5686)
 
 t1 = Thread(target=a.run)
 t2 = Thread(target=a.sendall_start)
+t3 = Thread(target=a.sendall_start)
 
 t1.start()
 sleep(10)
