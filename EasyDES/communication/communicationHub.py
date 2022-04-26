@@ -85,13 +85,13 @@ class BaseController(UDPBase):
         data["uuid"] = uuid
         for ip, port in self.node_pool:
             self.send(ip, port, data)
-            logging.info(f"send start to {ip} : {uuid} succeed")
+            logging.info(f"send instruction:[start:{uuid}] to {ip} : succeed")
     
     def send_start(self, aim_ip, aim_port, uuid="all"):
         data = deepcopy(missionStartInstruction)
         data["uuid"] = uuid
         self.send(aim_ip, aim_port, data)
-        logging.info(f"send start to {aim_ip} : {uuid} succeed")
+        logging.info(f"send instruction:[start:{uuid}] to {aim_ip} : succeed")
 
     def started_reply(self, data, addr):
         uuid = data["uuid"]
@@ -150,6 +150,7 @@ class BaseWorker(UDPBase):
         data = deepcopy(startedReplyInstruction)
         data["uuid"] = uuid
         self.send(self.controller_ip, self.controller_port, data)
+        logging.info(f"mission {uuid} started reply to {self.controller_ip} succeed")
     
     def deal_registered_reply(self, data):
         """
@@ -169,7 +170,7 @@ class BaseWorker(UDPBase):
         """
         uuid = data["uuid"]
         if data["uuid"] == "all":
-            logging.info(f"mission {uuid} start")
+            logging.info(f"recev mission {uuid} : start")
             self.mission_started_reply(uuid)
             pass # start all
         # start uuid one            

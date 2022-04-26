@@ -138,9 +138,8 @@ class UDPBase(CommunicationBase):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if aim_ip == '<broadcast>':
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  
-        logging.info(f"udp_send to {aim_ip}")
         sock.sendto(encode(data), (aim_ip, aim_port))
-        logging.info(f"send succeed")
+        logging.info(f"udp send to {aim_ip} succeed")
 
     def send(self, aim_ip, aim_port, data):
         self.client_send(aim_ip, aim_port, data)
