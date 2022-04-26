@@ -47,7 +47,6 @@ class BaseController(UDPBase):
             if data["type"] == "registerInstruction":
                 self.discover(data, addr)
             elif data["type"] == "startedReplyInstruction":
-                logging.info(f"if")
                 self.started_reply(data, addr)
             
     def register(self, ip, port):
