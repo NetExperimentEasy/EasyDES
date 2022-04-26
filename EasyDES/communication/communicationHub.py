@@ -134,14 +134,15 @@ class BaseWorker(UDPBase):
                 self.mission_start(data)
 
     def send_register(self):
-        IP_255 = self.host[:self.host.rindex('.')]+'.255'
+        # IP_255 = self.host[:self.host.rindex('.')]+'.255'
+        IP = '<broadcast>' 
         data = deepcopy(registerInstruction)
         data["w_ip"] = self.host
         data["w_port"] = self.port
         while self._IF_SEND:
             # needs to be fixed: can't got aim port before register, how to boardcast?
             # now： only can keep each side node's port same
-            self.send(IP_255, self.port, data)
+            self.send(IP, self.port, data)
             time.sleep(2)
 
     def mission_started_reply(self, uuid):
