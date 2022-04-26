@@ -1,8 +1,15 @@
 from EasyDES.communication.communicationHub import BaseController
 from time import sleep
+from threading import Thread
 
-a = BaseController('172.17.0.1', 5686)
+a = BaseController('0.0.0.0', 5686)
 
-a.run()
-sleep(5)
-a.sendall_start()
+t1 = Thread(target=a.run)
+t2 = Thread(target=a.sendall_start)
+
+t1.start()
+sleep(10)
+t2.start()
+
+t1.join()
+t2.join()

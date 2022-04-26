@@ -1,5 +1,5 @@
 from EasyDES.communication.communicationHub import BaseWorker
 
-a = BaseWorker('172.17.0.2', 5686)
+a = BaseWorker('0.0.0.0', 5686)
 
 a.run()

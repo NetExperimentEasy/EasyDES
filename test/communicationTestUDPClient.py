@@ -14,6 +14,7 @@ data2 = 'find'
 # with open('tran.txt','r') as f:
     # data2 = f.read()
 
-c.client_send(aim_ip='0.0.0.0',aim_port=5686, data= data2)
+# c.send(aim_ip='0.0.0.0',aim_port=5686, data= data2)
+c.send(aim_ip='<broadcast>',aim_port=5686, data= data2)
 
 

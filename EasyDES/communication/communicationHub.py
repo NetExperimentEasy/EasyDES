@@ -53,16 +53,17 @@ class BaseController(UDPBase):
         self.node_pool.append((ip, port))  
 
     def discover(self, data, addr):
-        if data["w_ip"] == addr and addr != '':
+        ip, port = addr
+        if data["w_ip"] == ip and ip != '':
             """
             recv: 1. 广播出去的包， 2. worker发送来的注册信息(worker端的ip)
             addr,数据包的源ip，if addr == self.ip -> 广播包 : 跳过
             data,worker数据包内的信息， if data 不在已有的ip池 则注册该ip
             """
-            if addr != self.host:
+            if ip != self.host:
                 w_ip, w_port = data["w_ip"], data["w_port"]
                 if w_ip not in self.node_pool:
-                    self.register((w_ip, w_port))
+                    self.register(w_ip, w_port)
                     self.registered_reply(w_ip, w_port)
 
     def registered_reply(self, w_ip, w_port):
