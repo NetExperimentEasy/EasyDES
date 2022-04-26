@@ -139,3 +139,6 @@ class UDPBase(CommunicationBase):
         logging.info(f"udp_send to {aim_ip}")
         sock.sendto(encode(data), (aim_ip, aim_port))
         logging.info(f"send succeed")
+
+    def send(self, aim_ip, aim_port, data):
+        self.client_send(aim_ip, aim_port, data)

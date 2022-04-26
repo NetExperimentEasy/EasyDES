@@ -110,7 +110,7 @@ class BaseWorker(UDPBase):
     controller_ip = None
     controller_port = None
 
-    def run_server(self):
+    def run(self):
         t0 = Thread(target=self.send_register)
         t1 = Thread(target=self.server)
         t2 = Thread(target=self.deal_queue)
@@ -138,7 +138,7 @@ class BaseWorker(UDPBase):
         data = deepcopy(registerInstruction)
         data["w_ip"] = self.host
         data["w_port"] = self.port
-        if self._IF_SEND:
+        while self._IF_SEND:
             # needs to be fixed: can't got aim port before register, how to boardcast?
             # now： only can keep each side node's port same
             self.send(IP_255, self.port, data)
