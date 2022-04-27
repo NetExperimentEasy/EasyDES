@@ -74,8 +74,9 @@ class TCPBase(CommunicationBase):
         while True:
             data = c.recv(self.recvsize)
             if len(data) == 0:
-                c.close()
-                del self.clients[addr]
+                # if file recv finished， break and save it in the queue
+                # c.close()
+                # del self.clients[addr]
                 break
             else:
                 alldata += data
