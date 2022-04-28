@@ -4,7 +4,7 @@ import queue
 from .mission import Mission, MissionManager
 import uuid
 import logging
-from .instruction import runAllMissions, runMission
+from .instruction import runAllMissions
 from ..utils import touch_file
 from multiprocessing import Process
 
@@ -16,7 +16,7 @@ class MissionHubBase:
         pass
     
     @abstractclassmethod
-    def register(self):
+    def mission_register(self):
         # 注册任务
         pass
 
@@ -40,13 +40,13 @@ class MissionHub(MissionHubBase, MissionManager):
     分发任务，Hub只负责发布(任务UUID,添加次数)，各个节点的MissionManager据此负责任务挂载
     run_queue需要一个即时执行队列 runqueueu，由客户端初始化，跑一个进程，立即执行入队的任务，处理通信模块接收的指令
     """
+    missions_pool = []
+    uuid_list = [] # save uuid, 判断任务是否存在
     def __init__(self) -> None:
         super().__init__()
         # self.log_file = "missonHub.log"
-        self.missions_pool = []
-        self.uuid_list = [] # save uuid, 判断任务是否存在
     
-    def run(self):
+    def runMissionHub(self):
         """
         run MissionHub
         """
@@ -57,7 +57,7 @@ class MissionHub(MissionHubBase, MissionManager):
     def run_runqueue(self):
         assert self.runqueue ,ValueError("run_runqueue needs set runqueue first")
         while True:
-            instuction = self.run_runqueue.get(True)
+            instuction = self.runqueue.get(True)
             if instuction["type"] == "runAllMissions":
                 p = Process(target = self.run_all_missions)
                 p.start()
@@ -67,7 +67,7 @@ class MissionHub(MissionHubBase, MissionManager):
     def set_common_queue(self, runqueue: queue.Queue):
         self.runqueue = runqueue
 
-    def register(self, mission:Mission=None, mission_item:MissionHubItem=None, creator=None, introduction=None, if_new=False):
+    def mission_register(self, mission:Mission=None, mission_item:MissionHubItem=None, creator=None, introduction=None, if_new=False):
         # 注册任务, if_new : Ture, register a new mission to Hub, False, register a exist mission to Hub
         if if_new:
             assert mission , "register new mission, can not be None"
@@ -93,7 +93,7 @@ class MissionHub(MissionHubBase, MissionManager):
         for obj in data:
             if 'missionHubItem' in obj:
                 missionHubItem = obj['missionHubItem']
-                self.register(if_new=False,mission_item=missionHubItem)
+                self.mission_register(if_new=False,mission_item=missionHubItem)
             if 'file' in obj:
                 file = obj['file']
                 filename = obj['filename']

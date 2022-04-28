@@ -26,11 +26,11 @@ class BaseController(UDPBase):
     detect clients， reply msg
     special controller instructions
     """
-    def __init__(self, host, port) -> None:
+    def __init__(self, host=None, port=None) -> None:
         super().__init__(host, port)
         self.node_pool = []
 
-    def run(self):
+    def runController(self):
         t1 = Thread(target=self.run_server)
         t2 = Thread(target=self.deal_udpqueue)
         t1.start()
@@ -51,7 +51,7 @@ class BaseController(UDPBase):
             elif data["type"] == "startedReplyInstruction":
                 self.started_reply(data, addr)
             
-    def register(self, ip, port):
+    def node_register(self, ip, port):
         self.node_pool.append((ip, port))  
 
     def discover(self, data, addr):
@@ -65,7 +65,7 @@ class BaseController(UDPBase):
             if ip != self.host:
                 w_ip, w_port = data["w_ip"], data["w_port"]
                 if w_ip not in self.node_pool:
-                    self.register(w_ip, w_port)
+                    self.node_register(w_ip, w_port)
                     self.registered_reply(w_ip, w_port)
 
     def registered_reply(self, w_ip, w_port):
@@ -115,7 +115,7 @@ class BaseWorker(UDPBase):
     controller_ip = None
     controller_port = None
 
-    def run(self):
+    def runWorker(self):
         t0 = Thread(target=self.send_register)
         t1 = Thread(target=self.server)
         t2 = Thread(target=self.deal_queue)

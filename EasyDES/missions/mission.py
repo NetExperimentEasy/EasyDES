@@ -25,7 +25,7 @@ class MissionManagerBase(ABC):
         pass
 
     @abstractclassmethod
-    def run():
+    def run_mission(self):
         "run cmd"
         pass
 
@@ -101,9 +101,9 @@ class MissionManager(MissionManagerBase):
     当前实现，先进先出队列
     优先级队列
     """
+    missions_queue = queue.PriorityQueue()
     def __init__(self) -> None:
         super().__init__()
-        self.missions_queue = queue.PriorityQueue()
         
     def put_mission(self, mission:Mission):
         self.missions_queue.put(mission_item(mission.priority, mission))
@@ -123,7 +123,7 @@ class MissionManager(MissionManagerBase):
         return result
         # TODO: window下报错，linux下正常
 
-    def run(self, cmd, log_file=None):
+    def run_mission(self, cmd, log_file=None):
         """
         run mission, set log_file if write log to file
         """
