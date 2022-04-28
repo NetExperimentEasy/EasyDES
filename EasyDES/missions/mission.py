@@ -21,7 +21,7 @@ class MissionManagerBase(ABC):
         pass
     
     @abstractclassmethod
-    def get_mission(self):
+    def pop_mission(self):
         pass
 
     @abstractclassmethod
@@ -99,7 +99,7 @@ class MissionManager(MissionManagerBase):
     MissionManager: 任务管理器，混入Hub中使用
     负责任务的调度，执行
     当前实现，先进先出队列
-    TODO.优先级队列
+    优先级队列
     """
     def __init__(self) -> None:
         super().__init__()
@@ -108,19 +108,19 @@ class MissionManager(MissionManagerBase):
     def put_mission(self, mission:Mission):
         self.missions_queue.put(mission_item(mission.priority, mission))
 
-    def get_mission(self) -> Mission:
+    def pop_mission(self) -> Mission:
         return self.missions_queue.get()
 
     def run_all_missions(self, log_file=None):
         result = []
         while not self.missions_queue.empty():
-            priority, mission = self.get_mission()
+            priority, mission = self.pop_mission()
             p = Process(target=self.run, args=(mission.get_command(), log_file))
             p.start()
             result.append(p)
         for i in result:
             i.join()
-        return True
+        return result
         # TODO: window下报错，linux下正常
 
     def run(self, cmd, log_file=None):

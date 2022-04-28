@@ -1,9 +1,12 @@
 from abc import abstractclassmethod
 from dataclasses import dataclass
+import queue
 from .mission import Mission, MissionManager
 import uuid
 import logging
+from .instruction import runAllMissions, runMission
 from ..utils import touch_file
+from multiprocessing import Process
 
 logging.basicConfig(level=logging.INFO,
                       format='[%(levelname)s] (%(threadName)-9s) %(message)s',)
@@ -35,6 +38,7 @@ class MissionHub(MissionHubBase, MissionManager):
     注册之后，调用对应的方法分发任务。
         如果目标节点的MissionHub没有该任务，则通信模块发送代码，并在目标节点注册任务。
     分发任务，Hub只负责发布(任务UUID,添加次数)，各个节点的MissionManager据此负责任务挂载
+    run_queue需要一个即时执行队列 runqueueu，由客户端初始化，跑一个进程，立即执行入队的任务，处理通信模块接收的指令
     """
     def __init__(self) -> None:
         super().__init__()
@@ -42,12 +46,27 @@ class MissionHub(MissionHubBase, MissionManager):
         self.missions_pool = []
         self.uuid_list = [] # save uuid, 判断任务是否存在
     
-    def run():
+    def run(self):
         """
         run MissionHub
         """
-        pass
-    
+        p = Process(target = self.run_runqueue)
+        p.start()
+        p.join()
+
+    def run_runqueue(self):
+        assert self.runqueue ,ValueError("run_runqueue needs set runqueue first")
+        while True:
+            instuction = self.run_runqueue.get(True)
+            if instuction["type"] == "runAllMissions":
+                p = Process(target = self.run_all_missions)
+                p.start()
+            # add more instruction
+            p.join()
+
+    def set_common_queue(self, runqueue: queue.Queue):
+        self.runqueue = runqueue
+
     def register(self, mission:Mission=None, mission_item:MissionHubItem=None, creator=None, introduction=None, if_new=False):
         # 注册任务, if_new : Ture, register a new mission to Hub, False, register a exist mission to Hub
         if if_new:

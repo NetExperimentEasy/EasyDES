@@ -1,8 +1,10 @@
+import queue
 from .communication import TCPBase, UDPBase
 from threading import Thread
 import logging
 from copy import deepcopy
 from .instruction import registerInstruction, registeredReplyInstruction, missionStartInstruction, startedReplyInstruction
+from ..missions.instruction import runAllMissions
 import time
 
 logging.basicConfig(level=logging.INFO,
@@ -77,6 +79,7 @@ class BaseController(UDPBase):
         self.send(w_ip, w_port, data)
         logging.info(f"reply to {w_ip} succeed")
 
+    # 由于manager是任务队列，所以目前只能实现start all命令
     def sendall_start(self, uuid="all"):
         """
         instruction: start all missions: uuid==all, spectial: uuid==uuid
@@ -87,6 +90,7 @@ class BaseController(UDPBase):
             self.send(ip, port, data)
             logging.info(f"send instruction:[start:{uuid}] to {ip} : succeed")
     
+    # 由于manager是任务队列，所以目前只能实现start all命令
     def send_start(self, aim_ip, aim_port, uuid="all"):
         data = deepcopy(missionStartInstruction)
         data["uuid"] = uuid
@@ -132,7 +136,8 @@ class BaseWorker(UDPBase):
             if data["type"] == "registeredReplyInstruction":
                 self.deal_registered_reply(data, addr)
             elif data["type"] == "missionStartInstruction":
-                self.mission_start(data)
+                assert self.runqueue ,ValueError("mission_start instruction needs set runqueue first")
+                self.mission_start(data, self.runqueue)
 
     def send_register(self):
         # IP_255 = self.host[:self.host.rindex('.')]+'.255'
@@ -164,15 +169,23 @@ class BaseWorker(UDPBase):
             self.controller_port = data["c_port"]             
             logging.info(f"register succeed and stop the register sender")
 
-    def mission_start(self, data):
+    def mission_start(self, data, runqueue: queue.Queue):
         """
         instruction: start all missions: "start": [string]
         put a start instruction to global runtime queue, missionHub received and start missions
         func: callable function for mission to start all missions or add instruction to a instructions list(different from the missions list)
         """
+        # 当前版本 只有startall的功能，如需扩展，需修改mission_manager中的任务队列为其他数据结构
         uuid = data["uuid"]
         if data["uuid"] == "all":
             logging.info(f"recev mission {uuid} : start")
+            data = deepcopy(runAllMissions)
+            runqueue.put(runAllMissions)
             self.mission_started_reply(uuid)
-            pass # start all
-        # start uuid one            
+        # data = deepcopy(runMission)
+        # data["uuid"] = uuid
+        # runqueue.put(runMission)
+        # start uuid one          
+
+    def set_common_queue(self, runqueue: queue.Queue):
+        self.runqueue = runqueue
