@@ -1,3 +1,8 @@
+
+# Todo : delete
+
+
+
 import logging
 import uuid
 import socket
@@ -181,6 +186,8 @@ class MissionHubItem:
     introduction:str
     mission:Mission
 
+
+# old class need delete
 class MissionHub(MissionHubBase, MissionManager):
     """
     任务注册中心,每个Node上跑一个，通过网络注册单例进行通信

@@ -115,7 +115,7 @@ class MissionManager(MissionManagerBase):
         result = []
         while not self.missions_queue.empty():
             priority, mission = self.pop_mission()
-            p = Process(target=self.run, args=(mission.get_command(), log_file))
+            p = Process(target=self.run_mission, args=(mission.get_command(), log_file))
             p.start()
             result.append(p)
         for i in result:

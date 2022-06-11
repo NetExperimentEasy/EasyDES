@@ -33,6 +33,11 @@ worker
 
 ![pic](./examples/test1.png)
 
-## 🔨 Todo :
+## 🔨 Todo : [Stop for refactoring]
 - 任务模块：任务监控，统计回传
 - webUI模块
+
+## 220612
+I plan to refactor the code to reduce the coupling between modules. The new structure diagram is as follows.
+
+![](./EaseDES_struc.png)

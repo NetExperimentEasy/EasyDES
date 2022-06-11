@@ -46,6 +46,7 @@ class MissionHub(MissionHubBase, MissionManager):
         super().__init__()
         # self.log_file = "missonHub.log"
     
+    # 所有的类 集成一个run，run由用户重写
     def runMissionHub(self):
         """
         run MissionHub
@@ -54,6 +55,7 @@ class MissionHub(MissionHubBase, MissionManager):
         p.start()
         p.join()
 
+    # 应该全部交给Manager
     def run_runqueue(self):
         assert self.runqueue ,ValueError("run_runqueue needs set runqueue first")
         while True:
